@@ -1,5 +1,5 @@
 .project
 .pydevproject
-/build
-/dist
-/_pycache_
+/build/
+/dist/
+/__pycache__/
