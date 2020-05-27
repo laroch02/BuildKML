@@ -9,7 +9,7 @@ class KML(object):
     '''
     KML Class is created to handle scanning of multiple image files in multiple folders and ultimately export a KML file compatible
     with Google Maps import.
-    For large number of placemarks, a minimum distance can be specified so close placemarks will not be exported. 
+    For large number of placemarks, a minimum distance can be specified so close placemarks from one another will not be exported.
     '''
     
     # Member variables
@@ -24,6 +24,12 @@ class KML(object):
         Constructor
         '''
         self.MapName = MapName
+    
+    def __repr__(self):
+        return "KML({})".format(self.MapName)
+    
+    def __str__(self):
+        return "This is My KML : " + self.MapName
     
     def ScanFolder(self, Folder:str):
         """
