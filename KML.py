@@ -73,7 +73,6 @@ class KML(object):
     
     def _AddPlacemark(self, Latitude:float, Longitude:float, Name:str="", Folder:str=""):
         self._PlacemarkList.append({"Latitude":Latitude, "Longitude":Longitude, "Name":Name, "Folder":Folder})
-        _PlacemarkListIsOrdered = False
         
     def _GetKMLString(self):
         
@@ -146,19 +145,11 @@ class KML(object):
     
     def _ReorderPlacemarks(self):
         """
-        Sorts list based on Folder and latitude and calculates distance from previous point.
+        Sorts list based on Folder and latitude
         """
-        if (not self._PlacemarkListIsOrdered):  # sort only if not already sorted
-            # Sort List in order to calculate distance between points.
-            self._PlacemarkList = sorted(self._PlacemarkList, key=lambda i: (i["Folder"], i['Latitude']))
-            LastLongitude = 0
-            LastLatitude = 0
-            for MyCoord in self._PlacemarkList:
-                MyCoord["Distance"] = self._DistanceBetweenPlacemarks(MyCoord["Latitude"], MyCoord["Longitude"], LastLatitude, LastLongitude)
-                LastLongitude = MyCoord["Longitude"]
-                LastLatitude = MyCoord["Latitude"]
-            self._PlacemarkListIsOrdered = True
-            self._FilterPlacemarks()  # recalculate placemarks to be exported
+        # Sort List in order to calculate distance between points.
+        self._PlacemarkList = sorted(self._PlacemarkList, key=lambda i: (i["Folder"], i['Latitude']))
+        self._FilterPlacemarks()  # recalculate placemarks to be exported
     
     def _FilterPlacemarks(self):
         '''
@@ -167,16 +158,22 @@ class KML(object):
         '''
         
         print("\tMin Distance Between Placemarks set to " + str(self.MinDistanceBetweenPlacemarks) + " meters.")
-            
+        
+        KeptCoords = []
+
         ExportCount = 0
         for MyCoord in self._PlacemarkList:
-            if MyCoord["Distance"] < self.MinDistanceBetweenPlacemarks:
-                MyCoord["Export"] = False
-            else:
-                MyCoord["Export"] = True
+            MyCoord["Export"] = True
+            for KeptCoord in KeptCoords:
+                if self._DistanceBetweenPlacemarks(MyCoord["Latitude"], MyCoord["Longitude"], KeptCoord["Latitude"], KeptCoord["Longitude"]) < self.MinDistanceBetweenPlacemarks:
+                    MyCoord["Export"] = False
+                    break
+            
+            if MyCoord["Export"] == True:
                 ExportCount += 1
+                KeptCoords.append(MyCoord)
         
-        print("\t" + str(ExportCount) + " / " + str(len(self._PlacemarkList)) + " placemarks marked to export.")
+        print("\t" + str(ExportCount) + " placemarks marked to export out of " + str(len(self._PlacemarkList)))
         return  ExportCount
         
     def _convert_to_degress(self, value:float):
